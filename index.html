@@ -11,7 +11,7 @@
   :root {
     --bg: #0a0a0f; --surface: #12121a; --border: #1e1e2e;
     --accent: #f0c040; --accent2: #e05a30; --text: #f0ede8;
-    --muted: #555570; --radius: 12px;
+    --muted: #555570; --green: #7ec87c; --radius: 12px;
   }
   body {
     background: var(--bg); color: var(--text);
@@ -28,41 +28,15 @@
   }
   header { text-align: center; position: relative; z-index: 1; flex-shrink: 0; }
   header h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem, 5vw, 3.2rem);
     letter-spacing: 0.08em; color: var(--accent); line-height: 1;
     text-shadow: 0 0 40px rgba(240,192,64,0.3);
   }
   header p { color: var(--muted); font-size: 0.75rem; margin-top: 2px; letter-spacing: 0.08em; text-transform: uppercase; }
 
-  /* Status bar */
-  .status-bar {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 7px 14px;
-    font-size: 0.78rem; color: var(--muted);
-    flex-shrink: 0; width: 100%; max-width: 900px;
-    position: relative; z-index: 1;
-  }
-  .status-dot {
-    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-    background: var(--muted);
-  }
-  .status-dot.loading { background: var(--accent); animation: pulse 1s infinite; }
-  .status-dot.ok      { background: #7ec87c; }
-  .status-dot.warn    { background: var(--accent2); }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-  .status-bar button {
-    margin-left: auto; background: transparent; border: 1px solid var(--border);
-    border-radius: 6px; padding: 3px 10px; color: var(--muted);
-    font-size: 0.75rem; cursor: pointer; font-family: 'DM Sans', sans-serif;
-    transition: border-color 0.2s, color 0.2s;
-  }
-  .status-bar button:hover { border-color: var(--accent); color: var(--accent); }
-
   .layout {
-    display: grid; grid-template-columns: 260px 1fr; gap: 16px;
-    width: 100%; max-width: 900px; position: relative; z-index: 1;
+    display: grid; grid-template-columns: 270px 1fr; gap: 16px;
+    width: 100%; max-width: 920px; position: relative; z-index: 1;
     flex: 1; min-height: 0;
   }
   .panel {
@@ -74,25 +48,33 @@
     display: flex; align-items: center; gap: 8px;
     border-bottom: 1px solid var(--border); padding-bottom: 8px; flex-shrink: 0;
   }
-  .panel-title {
-    font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem;
-    letter-spacing: 0.1em; color: var(--accent);
+  .panel-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 0.1em; color: var(--accent); }
+  .panel-count { margin-left: auto; font-size: 0.72rem; color: var(--muted); background: var(--bg); border: 1px solid var(--border); border-radius: 100px; padding: 1px 8px; }
+
+  /* People picker button */
+  .btn-people {
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: rgba(126,200,124,0.1); border: 1px solid rgba(126,200,124,0.35);
+    border-radius: 8px; padding: 9px 12px; color: var(--green);
+    font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
   }
-  .panel-count {
-    margin-left: auto; font-size: 0.72rem; color: var(--muted);
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 100px; padding: 1px 8px;
+  .btn-people:hover { background: rgba(126,200,124,0.18); border-color: rgba(126,200,124,0.6); }
+  .btn-people svg { flex-shrink: 0; }
+
+  .divider {
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;
   }
+  .divider::before, .divider::after { content:''; flex:1; height:1px; background: var(--border); }
+
   .names-grid {
     display: flex; flex-direction: column; gap: 5px;
     overflow-y: auto; flex: 1; min-height: 0;
     scrollbar-width: thin; scrollbar-color: var(--border) transparent;
   }
   .name-row { display: flex; align-items: center; gap: 7px; }
-  .name-num {
-    font-family: 'Bebas Neue', sans-serif; font-size: 0.9rem;
-    color: var(--muted); width: 18px; text-align: right; flex-shrink: 0;
-  }
+  .name-num { font-family: 'Bebas Neue', sans-serif; font-size: 0.9rem; color: var(--muted); width: 18px; text-align: right; flex-shrink: 0; }
   .name-input {
     flex: 1; background: var(--bg); border: 1px solid var(--border);
     border-radius: 6px; padding: 5px 9px; color: var(--text);
@@ -101,69 +83,60 @@
   }
   .name-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(240,192,64,0.1); }
   .name-input.picked { opacity: 0.3; pointer-events: none; }
-  .name-input.auto-filled { border-color: rgba(126,200,124,0.4); }
-  .name-badge {
-    width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; font-size: 0.6rem;
-  }
+  .name-input.from-picker { border-color: rgba(126,200,124,0.4); }
+  .name-badge { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; }
   .name-badge.active { background: rgba(240,192,64,0.1); }
   .name-badge.picked-badge { background: var(--accent2); color: #fff; font-size: 0.6rem; font-weight: 700; }
 
   .btn-spin {
     flex-shrink: 0; background: var(--accent); color: #0a0a0f; border: none;
-    border-radius: 8px; padding: 11px;
-    font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 0.1em;
-    cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
-    box-shadow: 0 4px 16px rgba(240,192,64,0.2);
+    border-radius: 8px; padding: 11px; font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem; letter-spacing: 0.1em; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 16px rgba(240,192,64,0.2);
   }
   .btn-spin:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(240,192,64,0.35); }
   .btn-spin:disabled { background: var(--muted); cursor: not-allowed; box-shadow: none; }
-
   .btn-reset {
     flex-shrink: 0; background: transparent; border: 1px solid var(--border);
     border-radius: 8px; padding: 7px; color: var(--muted);
-    font-family: 'DM Sans', sans-serif; font-size: 0.8rem;
-    cursor: pointer; transition: border-color 0.2s, color 0.2s;
+    font-family: 'DM Sans', sans-serif; font-size: 0.8rem; cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
   }
   .btn-reset:hover { border-color: var(--accent2); color: var(--accent2); }
 
+  /* Wheel area */
   .wheel-area { display: flex; flex-direction: column; align-items: center; gap: 12px; min-height: 0; }
   .wheel-wrap { position: relative; flex: 1; min-height: 0; aspect-ratio: 1; max-width: 100%; }
   .pointer {
     position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
-    width: 0; height: 0;
-    border-left: 11px solid transparent; border-right: 11px solid transparent;
+    width: 0; height: 0; border-left: 11px solid transparent; border-right: 11px solid transparent;
     border-top: 22px solid var(--accent); z-index: 10;
     filter: drop-shadow(0 2px 6px rgba(240,192,64,0.6));
   }
-  canvas#wheel {
-    width: 100%; height: 100%; border-radius: 50%;
-    box-shadow: 0 0 0 5px var(--border), 0 0 40px rgba(0,0,0,0.5);
-  }
+  canvas#wheel { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 0 0 5px var(--border), 0 0 40px rgba(0,0,0,0.5); }
   .result-box {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 10px 24px;
-    text-align: center; width: 100%; flex-shrink: 0; transition: border-color 0.4s;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 10px 24px; text-align: center; width: 100%; flex-shrink: 0; transition: border-color 0.4s;
   }
   .result-box.highlight { border-color: var(--accent); }
   .result-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
   .result-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.06em; color: var(--accent); line-height: 1.1; }
-  .history {
-    display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;
-    width: 100%; flex-shrink: 0; max-height: 56px; overflow-y: auto;
-    scrollbar-width: thin; scrollbar-color: var(--border) transparent;
-  }
-  .history-chip {
-    background: var(--border); border-radius: 100px; padding: 3px 10px;
-    font-size: 0.72rem; color: var(--muted);
-    display: flex; align-items: center; gap: 5px; animation: chipIn 0.3s ease;
-  }
-  .history-chip .order {
-    background: var(--accent2); color: #fff; border-radius: 50%;
-    width: 15px; height: 15px; font-size: 0.6rem;
-    display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;
-  }
+  .history { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; width: 100%; flex-shrink: 0; max-height: 56px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  .history-chip { background: var(--border); border-radius: 100px; padding: 3px 10px; font-size: 0.72rem; color: var(--muted); display: flex; align-items: center; gap: 5px; animation: chipIn 0.3s ease; }
+  .history-chip .order { background: var(--accent2); color: #fff; border-radius: 50%; width: 15px; height: 15px; font-size: 0.6rem; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
   @keyframes chipIn { from{opacity:0;transform:scale(0.7)} to{opacity:1;transform:scale(1)} }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 20px; font-size: 0.82rem; color: var(--text);
+    transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; z-index: 100;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.green { border-color: rgba(126,200,124,0.5); color: var(--green); }
+  .toast.orange { border-color: rgba(224,90,48,0.5); color: var(--accent2); }
 </style>
 </head>
 <body>
@@ -173,20 +146,27 @@
   <p>Spin · Pick · Repeat</p>
 </header>
 
-<!-- Status bar -->
-<div class="status-bar" id="statusBar">
-  <div class="status-dot loading" id="statusDot"></div>
-  <span id="statusText">Loading members…</span>
-  <button onclick="loadTeamsMembers()" id="reloadBtn" style="display:none">↺ Reload members</button>
-</div>
-
 <div class="layout">
   <div class="panel">
     <div class="panel-header">
       <span class="panel-title">Players</span>
       <span class="panel-count" id="playerCount">0 / 12</span>
     </div>
+
+    <!-- Teams People Picker -->
+    <button class="btn-people" onclick="openPeoplePicker()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M1.5 13c0-2.485 2.015-4.5 4.5-4.5s4.5 2.015 4.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M11 7.5l1.5 1.5L15 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Select from Teams directory
+    </button>
+
+    <div class="divider">or type manually</div>
+
     <div class="names-grid" id="namesGrid"></div>
+
     <button class="btn-spin" id="btnSpin" onclick="startSpin()">SPIN</button>
     <button class="btn-reset" onclick="resetAll()">↺ Reset Picks</button>
   </div>
@@ -204,8 +184,9 @@
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-  // ── Constants ──────────────────────────────────────────
   const MAX = 12;
   const COLORS = [
     '#e05a30','#f0c040','#4a9eda','#7ec87c',
@@ -213,12 +194,82 @@
     '#a0c840','#6a7ee8','#f0a030','#50b8d0'
   ];
 
-  // ── State ──────────────────────────────────────────────
   let pickedOrder  = [];
   let spinning     = false;
   let currentAngle = 0;
+  let teamsReady   = false;
 
-  // ── Build empty inputs ─────────────────────────────────
+  // ── Init Teams SDK ─────────────────────────────────────
+  microsoftTeams.app.initialize().then(() => {
+    teamsReady = true;
+  }).catch(() => {
+    teamsReady = false; // running outside Teams – that's fine
+  });
+
+  // ── People Picker ──────────────────────────────────────
+  async function openPeoplePicker() {
+    if (!teamsReady) {
+      showToast('People picker only works inside Microsoft Teams', 'orange');
+      return;
+    }
+
+    try {
+      // selectPeople opens the native Teams people-search dialog
+      const selected = await microsoftTeams.people.selectPeople({
+        title: 'Select participants for the wheel',
+        setSelected: [],
+        openOrgWideSearchInChatOrChannel: true,
+        singleSelect: false
+      });
+
+      if (!selected || selected.length === 0) return;
+
+      // Grab display names, cap at MAX
+      const names = selected
+        .map(p => p.displayName || p.email || '')
+        .filter(Boolean)
+        .slice(0, MAX);
+
+      populateFromPicker(names);
+      showToast(`✓ ${names.length} participant${names.length !== 1 ? 's' : ''} added`, 'green');
+
+    } catch (err) {
+      // User cancelled or API not available
+      if (err && err.errorCode !== 'USER_ABORT') {
+        showToast('Could not open people picker – add names manually', 'orange');
+      }
+    }
+  }
+
+  function populateFromPicker(names) {
+    // Clear all inputs first
+    for (let i = 0; i < MAX; i++) {
+      const inp = document.getElementById(`name${i}`);
+      inp.value = '';
+      inp.classList.remove('from-picker', 'picked');
+      const badge = document.getElementById(`badge${i}`);
+      badge.className = 'name-badge active';
+      badge.textContent = '';
+    }
+    // Fill with picker results
+    names.forEach((name, i) => {
+      const inp = document.getElementById(`name${i}`);
+      inp.value = name;
+      inp.classList.add('from-picker');
+    });
+    // Reset wheel state
+    pickedOrder  = [];
+    currentAngle = 0;
+    document.getElementById('resultName').textContent = '—';
+    document.getElementById('resultBox').classList.remove('highlight');
+    document.getElementById('history').innerHTML = '';
+    const btn = document.getElementById('btnSpin');
+    btn.disabled = false; btn.textContent = 'SPIN';
+    updateCount();
+    drawWheel();
+  }
+
+  // ── Build manual inputs ────────────────────────────────
   function buildInputs() {
     const grid = document.getElementById('namesGrid');
     grid.innerHTML = '';
@@ -228,108 +279,19 @@
       row.innerHTML = `
         <span class="name-num">${i+1}</span>
         <input class="name-input" id="name${i}" type="text"
-               placeholder="Name ${i+1}" oninput="onInputChange()" />
+               placeholder="Name ${i+1}" oninput="onInput()" />
         <div class="name-badge active" id="badge${i}"></div>`;
       grid.appendChild(row);
     }
   }
 
-  function onInputChange() { updateCount(); drawWheel(); }
+  function onInput() { updateCount(); drawWheel(); }
 
   function updateCount() {
-    const n = getActiveNames().length;
-    document.getElementById('playerCount').textContent = `${n} / ${MAX}`;
+    document.getElementById('playerCount').textContent =
+      `${getActiveNames().length} / ${MAX}`;
   }
 
-  // ── Teams SDK: load members ────────────────────────────
-  async function loadTeamsMembers() {
-    setStatus('loading', 'Loading members…');
-    document.getElementById('reloadBtn').style.display = 'none';
-
-    try {
-      await microsoftTeams.app.initialize();
-      const context = await microsoftTeams.app.getContext();
-
-      // Try to get members via the People picker / app APIs
-      // Teams JS SDK v2: use microsoftTeams.people or fall back gracefully
-      let members = [];
-
-      try {
-        // Method 1: channel members (works in Team tabs)
-        const result = await microsoftTeams.teams.getMembers();
-        if (result && result.length > 0) {
-          members = result.map(m => m.displayName || m.name || m.upn || '').filter(Boolean);
-        }
-      } catch (e1) {
-        try {
-          // Method 2: app context user + known group members via newer API
-          const user = context.user;
-          if (user && user.displayName) members.push(user.displayName);
-        } catch (e2) { /* continue to fallback */ }
-      }
-
-      // Deduplicate & trim to MAX
-      members = [...new Set(members)].slice(0, MAX);
-
-      if (members.length > 0) {
-        populateNames(members, true);
-        setStatus('ok', `${members.length} member${members.length !== 1 ? 's' : ''} loaded from Teams`);
-        document.getElementById('reloadBtn').style.display = 'inline';
-      } else {
-        // No members retrieved — show current user at least
-        const displayName = context?.user?.displayName;
-        if (displayName) {
-          populateNames([displayName], true);
-          setStatus('warn', 'Only your name loaded — add others manually');
-        } else {
-          setStatus('warn', 'Could not load members — enter names manually');
-        }
-        document.getElementById('reloadBtn').style.display = 'inline';
-      }
-
-    } catch (err) {
-      // Not running inside Teams (e.g. plain browser) — silent fallback
-      setStatus('warn', 'Running outside Teams — enter names manually');
-      document.getElementById('reloadBtn').style.display = 'inline';
-    }
-  }
-
-  function populateNames(names, markAutoFilled) {
-    // Clear all first
-    for (let i = 0; i < MAX; i++) {
-      const inp = document.getElementById(`name${i}`);
-      inp.value = '';
-      inp.classList.remove('auto-filled', 'picked');
-      const badge = document.getElementById(`badge${i}`);
-      badge.className = 'name-badge active';
-      badge.textContent = '';
-    }
-    // Fill
-    names.slice(0, MAX).forEach((name, i) => {
-      const inp = document.getElementById(`name${i}`);
-      inp.value = name;
-      if (markAutoFilled) inp.classList.add('auto-filled');
-    });
-    pickedOrder = [];
-    currentAngle = 0;
-    document.getElementById('resultName').textContent = '—';
-    document.getElementById('resultBox').classList.remove('highlight');
-    document.getElementById('history').innerHTML = '';
-    const btn = document.getElementById('btnSpin');
-    btn.disabled = false;
-    btn.textContent = 'SPIN';
-    updateCount();
-    drawWheel();
-  }
-
-  function setStatus(type, text) {
-    const dot  = document.getElementById('statusDot');
-    const span = document.getElementById('statusText');
-    dot.className  = 'status-dot ' + type;
-    span.textContent = text;
-  }
-
-  // ── Name helpers ───────────────────────────────────────
   function getActiveNames() {
     const all = [];
     for (let i = 0; i < MAX; i++) {
@@ -343,12 +305,11 @@
     return getActiveNames().filter(n => !pickedOrder.includes(n.name));
   }
 
-  // ── Wheel drawing ──────────────────────────────────────
+  // ── Wheel ──────────────────────────────────────────────
   function drawWheel(highlightIndex = -1) {
     const canvas = document.getElementById('wheel');
     const ctx    = canvas.getContext('2d');
-    const W = canvas.width, H = canvas.height;
-    const cx = W/2, cy = H/2, r = W/2 - 8;
+    const W = canvas.width, H = canvas.height, cx = W/2, cy = H/2, r = W/2 - 8;
 
     ctx.clearRect(0, 0, W, H);
     const available = getAvailableNames();
@@ -356,8 +317,7 @@
     if (available.length === 0) {
       ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2);
       ctx.fillStyle = '#1a1a2a'; ctx.fill();
-      ctx.fillStyle = '#555570';
-      ctx.font = 'bold 18px "DM Sans"';
+      ctx.fillStyle = '#555570'; ctx.font = 'bold 18px "DM Sans"';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(getActiveNames().length === 0 ? 'Add names →' : 'All picked!', cx, cy);
       return;
@@ -365,25 +325,17 @@
 
     const slice = (Math.PI * 2) / available.length;
     available.forEach((item, i) => {
-      const startA = currentAngle + i * slice;
-      const endA   = startA + slice;
-      const isHL   = i === highlightIndex;
-
-      ctx.beginPath(); ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, r, startA, endA); ctx.closePath();
-      ctx.fillStyle = isHL ? '#fff' : COLORS[item.index % COLORS.length];
-      ctx.fill();
+      const startA = currentAngle + i * slice, endA = startA + slice;
+      const isHL = i === highlightIndex;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, startA, endA); ctx.closePath();
+      ctx.fillStyle = isHL ? '#fff' : COLORS[item.index % COLORS.length]; ctx.fill();
       ctx.strokeStyle = '#0a0a0f'; ctx.lineWidth = 2; ctx.stroke();
-
-      ctx.save();
-      ctx.translate(cx, cy); ctx.rotate(startA + slice/2);
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(startA + slice/2);
       ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
       ctx.fillStyle = isHL ? '#0a0a0f' : 'rgba(0,0,0,0.85)';
       ctx.font = `bold ${available.length > 8 ? 12 : 14}px "DM Sans"`;
-      let label = item.name;
-      if (label.length > 12) label = label.slice(0, 11) + '…';
-      ctx.fillText(label, r - 12, 0);
-      ctx.restore();
+      let label = item.name; if (label.length > 12) label = label.slice(0, 11) + '…';
+      ctx.fillText(label, r - 12, 0); ctx.restore();
     });
 
     ctx.beginPath(); ctx.arc(cx, cy, 20, 0, Math.PI*2);
@@ -391,7 +343,6 @@
     ctx.strokeStyle = '#f0c040'; ctx.lineWidth = 3; ctx.stroke();
   }
 
-  // ── Spin ───────────────────────────────────────────────
   function startSpin() {
     if (spinning) return;
     const available = getAvailableNames();
@@ -407,85 +358,72 @@
     const targetOffset = -(currentAngle + winnerIdx * sliceAngle + sliceAngle/2) - Math.PI/2;
     const extraSpins   = (Math.PI * 2) * (5 + Math.floor(Math.random() * 4));
     const totalRotation = extraSpins + ((targetOffset % (Math.PI*2)) + Math.PI*2) % (Math.PI*2);
+    const duration = 4000 + Math.random() * 1000, startTime = performance.now(), startAngle = currentAngle;
 
-    const duration   = 4000 + Math.random() * 1000;
-    const startTime  = performance.now();
-    const startAngle = currentAngle;
-
-    function ease(t) { return 1 - Math.pow(1 - t, 3); }
+    const ease = t => 1 - Math.pow(1 - t, 3);
 
     function animate(now) {
       const t = Math.min((now - startTime) / duration, 1);
       currentAngle = startAngle + totalRotation * ease(t);
       drawWheel();
       if (t < 1) { requestAnimationFrame(animate); return; }
-
       currentAngle = startAngle + totalRotation;
-      const norm     = ((-currentAngle - Math.PI/2) % (Math.PI*2) + Math.PI*2) % (Math.PI*2);
-      const actualIdx = Math.floor(norm / sliceAngle) % available.length;
-      drawWheel(actualIdx);
-      onWinner(available[actualIdx].name);
+      const norm = ((-currentAngle - Math.PI/2) % (Math.PI*2) + Math.PI*2) % (Math.PI*2);
+      const idx  = Math.floor(norm / sliceAngle) % available.length;
+      drawWheel(idx);
+      onWinner(available[idx].name);
     }
     requestAnimationFrame(animate);
   }
 
   function onWinner(name) {
-    pickedOrder.push(name);
-    spinning = false;
-
+    pickedOrder.push(name); spinning = false;
     for (let i = 0; i < MAX; i++) {
-      const inp   = document.getElementById(`name${i}`);
-      const badge = document.getElementById(`badge${i}`);
+      const inp = document.getElementById(`name${i}`), badge = document.getElementById(`badge${i}`);
       if (inp.value.trim() === name && !inp.classList.contains('picked')) {
-        inp.classList.add('picked');
-        badge.className   = 'name-badge picked-badge';
-        badge.textContent = pickedOrder.length;
-        break;
+        inp.classList.add('picked'); badge.className = 'name-badge picked-badge';
+        badge.textContent = pickedOrder.length; break;
       }
     }
-
     document.getElementById('resultName').textContent = name;
     document.getElementById('resultBox').classList.add('highlight');
-
     const chip = document.createElement('div');
     chip.className = 'history-chip';
     chip.innerHTML = `<span class="order">${pickedOrder.length}</span>${name}`;
     document.getElementById('history').prepend(chip);
-
     if (getAvailableNames().length === 0) {
       document.getElementById('btnSpin').disabled = true;
       document.getElementById('btnSpin').textContent = 'ALL DONE!';
       drawWheel();
-    } else {
-      document.getElementById('btnSpin').disabled = false;
-    }
+    } else { document.getElementById('btnSpin').disabled = false; }
   }
 
-  // ── Reset picks only (keep names) ─────────────────────
   function resetAll() {
-    pickedOrder  = [];
-    currentAngle = 0;
-    spinning     = false;
+    pickedOrder = []; currentAngle = 0; spinning = false;
     for (let i = 0; i < MAX; i++) {
-      const inp   = document.getElementById(`name${i}`);
-      const badge = document.getElementById(`badge${i}`);
-      inp.classList.remove('picked');
-      badge.className   = 'name-badge active';
-      badge.textContent = '';
+      const inp = document.getElementById(`name${i}`), badge = document.getElementById(`badge${i}`);
+      inp.classList.remove('picked'); badge.className = 'name-badge active'; badge.textContent = '';
     }
     document.getElementById('resultName').textContent = '—';
     document.getElementById('resultBox').classList.remove('highlight');
     document.getElementById('history').innerHTML = '';
     const btn = document.getElementById('btnSpin');
-    btn.disabled    = false;
-    btn.textContent = 'SPIN';
+    btn.disabled = false; btn.textContent = 'SPIN';
     drawWheel();
   }
 
-  // ── Init ───────────────────────────────────────────────
+  // ── Toast ──────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast ' + type + ' show';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.classList.remove('show'); }, 3000);
+  }
+
+  // ── Start ──────────────────────────────────────────────
   buildInputs();
   drawWheel();
-  loadTeamsMembers();   // auto-runs on load
 </script>
 </body>
 </html>
