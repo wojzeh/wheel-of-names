@@ -103,6 +103,7 @@
     transition: border-color 0.2s, color 0.2s;
   }
   .btn-reset:hover { border-color: var(--accent2); color: var(--accent2); }
+  .btn-reset-names:hover { border-color: #666; color: var(--muted); }
 
   /* Wheel area */
   .wheel-area { display: flex; flex-direction: column; align-items: center; gap: 12px; min-height: 0; }
@@ -168,7 +169,8 @@
     <div class="names-grid" id="namesGrid"></div>
 
     <button class="btn-spin" id="btnSpin" onclick="startSpin()">SPIN</button>
-    <button class="btn-reset" onclick="resetAll()">↺ Reset Picks</button>
+    <button class="btn-reset" onclick="resetPicks()">↺ Reset Picks</button>
+    <button class="btn-reset btn-reset-names" onclick="resetNames()">✕ Reset Names</button>
   </div>
 
   <div class="wheel-area">
@@ -218,7 +220,7 @@
       const selected = await microsoftTeams.people.selectPeople({
         title: 'Select participants for the wheel',
         setSelected: [],
-        openOrgWideSearchInChatOrChannel: true,
+        openOrgWideSearchInChatOrChannel: false,  // limits search to current chat/channel members only
         singleSelect: false
       });
 
@@ -267,6 +269,7 @@
     btn.disabled = false; btn.textContent = 'SPIN';
     updateCount();
     drawWheel();
+    saveNames();
   }
 
   // ── Build manual inputs ────────────────────────────────
@@ -285,7 +288,33 @@
     }
   }
 
-  function onInput() { updateCount(); drawWheel(); }
+  // ── localStorage persistence ───────────────────────────
+  const STORAGE_KEY = 'wheelOfNames_v1';
+
+  function saveNames() {
+    const names = [];
+    for (let i = 0; i < MAX; i++) {
+      names.push(document.getElementById(`name${i}`).value.trim());
+    }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(names)); } catch(e) {}
+  }
+
+  function loadSavedNames() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return false;
+      const names = JSON.parse(saved);
+      if (!Array.isArray(names) || names.every(n => !n)) return false;
+      names.slice(0, MAX).forEach((name, i) => {
+        if (name) document.getElementById(`name${i}`).value = name;
+      });
+      updateCount(); drawWheel();
+      showToast('✓ Names restored from last session', 'green');
+      return true;
+    } catch(e) { return false; }
+  }
+
+  function onInput() { updateCount(); saveNames(); drawWheel(); }
 
   function updateCount() {
     document.getElementById('playerCount').textContent =
@@ -398,7 +427,8 @@
     } else { document.getElementById('btnSpin').disabled = false; }
   }
 
-  function resetAll() {
+  // ── Reset picks only — names stay ─────────────────────
+  function resetPicks() {
     pickedOrder = []; currentAngle = 0; spinning = false;
     for (let i = 0; i < MAX; i++) {
       const inp = document.getElementById(`name${i}`), badge = document.getElementById(`badge${i}`);
@@ -410,6 +440,25 @@
     const btn = document.getElementById('btnSpin');
     btn.disabled = false; btn.textContent = 'SPIN';
     drawWheel();
+  }
+
+  // ── Reset names + picks — clears localStorage too ─────
+  function resetNames() {
+    if (!confirm('Clear all names and picks?')) return;
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+    pickedOrder = []; currentAngle = 0; spinning = false;
+    for (let i = 0; i < MAX; i++) {
+      const inp = document.getElementById(`name${i}`), badge = document.getElementById(`badge${i}`);
+      inp.value = ''; inp.classList.remove('picked', 'from-picker');
+      badge.className = 'name-badge active'; badge.textContent = '';
+    }
+    document.getElementById('resultName').textContent = '—';
+    document.getElementById('resultBox').classList.remove('highlight');
+    document.getElementById('history').innerHTML = '';
+    const btn = document.getElementById('btnSpin');
+    btn.disabled = false; btn.textContent = 'SPIN';
+    updateCount(); drawWheel();
+    showToast('Names cleared', '');
   }
 
   // ── Toast ──────────────────────────────────────────────
@@ -424,6 +473,7 @@
   // ── Start ──────────────────────────────────────────────
   buildInputs();
   drawWheel();
+  loadSavedNames();  // restore names from previous session
 </script>
 </body>
 </html>
