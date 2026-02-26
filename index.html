@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wheel of Names</title>
+<script src="https://res.cdn.office.net/teams-js/2.22.0/js/MicrosoftTeams.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --accent: #f0c040;
+    --accent2: #e05a30;
+    --text: #f0ede8;
+    --muted: #555570;
+    --radius: 12px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 12px 24px;
+    gap: 16px;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(240,192,64,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(240,192,64,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  header {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    line-height: 1;
+    text-shadow: 0 0 40px rgba(240,192,64,0.3);
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 0.75rem;
+    margin-top: 2px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 16px;
+    width: 100%;
+    max-width: 900px;
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* ── LEFT PANEL ── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+  }
+
+  .panel-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+    flex-shrink: 0;
+  }
+
+  .names-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .name-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .name-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.9rem;
+    color: var(--muted);
+    width: 18px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .name-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 9px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    min-width: 0;
+  }
+
+  .name-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(240,192,64,0.1);
+  }
+
+  .name-input.picked {
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  .name-badge {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+  }
+
+  .name-badge.active { background: rgba(240,192,64,0.1); }
+  .name-badge.picked-badge {
+    background: var(--accent2);
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+  }
+
+  .btn-spin {
+    flex-shrink: 0;
+    background: var(--accent);
+    color: #0a0a0f;
+    border: none;
+    border-radius: 8px;
+    padding: 11px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 16px rgba(240,192,64,0.2);
+  }
+
+  .btn-spin:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(240,192,64,0.35);
+  }
+
+  .btn-spin:disabled { background: var(--muted); cursor: not-allowed; box-shadow: none; }
+
+  .btn-reset {
+    flex-shrink: 0;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .btn-reset:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* ── RIGHT: WHEEL + RESULT ── */
+  .wheel-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    min-height: 0;
+  }
+
+  .wheel-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    aspect-ratio: 1;
+    max-width: 100%;
+  }
+
+  .pointer {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 11px solid transparent;
+    border-right: 11px solid transparent;
+    border-top: 22px solid var(--accent);
+    z-index: 10;
+    filter: drop-shadow(0 2px 6px rgba(240,192,64,0.6));
+  }
+
+  canvas#wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    box-shadow: 0 0 0 5px var(--border), 0 0 40px rgba(0,0,0,0.5);
+  }
+
+  .result-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 24px;
+    text-align: center;
+    width: 100%;
+    flex-shrink: 0;
+    transition: border-color 0.4s;
+  }
+
+  .result-box.highlight { border-color: var(--accent); }
+
+  .result-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+
+  .result-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    line-height: 1.1;
+  }
+
+  .history {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    width: 100%;
+    flex-shrink: 0;
+    max-height: 56px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .history-chip {
+    background: var(--border);
+    border-radius: 100px;
+    padding: 3px 10px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    animation: chipIn 0.3s ease;
+  }
+
+  .history-chip .order {
+    background: var(--accent2);
+    color: #fff;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    font-size: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  @keyframes chipIn {
+    from { opacity: 0; transform: scale(0.7); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Wheel of Names</h1>
+  <p>Spin · Pick · Repeat</p>
+</header>
+
+<div class="layout">
+  <div class="panel">
+    <div class="panel-title">Players</div>
+    <div class="names-grid" id="namesGrid"></div>
+    <button class="btn-spin" id="btnSpin" onclick="startSpin()">SPIN</button>
+    <button class="btn-reset" onclick="resetAll()">↺ Reset Everything</button>
+  </div>
+
+  <div class="wheel-area">
+    <div class="wheel-wrap">
+      <div class="pointer"></div>
+      <canvas id="wheel" width="500" height="500"></canvas>
+    </div>
+    <div class="result-box" id="resultBox">
+      <div class="result-label">Last picked</div>
+      <div class="result-name" id="resultName">—</div>
+    </div>
+    <div class="history" id="history"></div>
+  </div>
+</div>
+
+<script>
+  // Initialize Teams SDK
+  microsoftTeams.app.initialize();
+
+  const MAX = 12;
+  let pickedOrder = [];
+  let spinning = false;
+  let currentAngle = 0;
+
+  const COLORS = [
+    '#e05a30','#f0c040','#4a9eda','#7ec87c',
+    '#c45abf','#e8864a','#4fd4c4','#e05878',
+    '#a0c840','#6a7ee8','#f0a030','#50b8d0'
+  ];
+
+  function buildInputs() {
+    const grid = document.getElementById('namesGrid');
+    grid.innerHTML = '';
+    for (let i = 0; i < MAX; i++) {
+      const row = document.createElement('div');
+      row.className = 'name-row';
+      row.innerHTML = `
+        <span class="name-num">${i+1}</span>
+        <input class="name-input" id="name${i}" type="text"
+               placeholder="Name ${i+1}" oninput="drawWheel()" />
+        <div class="name-badge active" id="badge${i}"></div>
+      `;
+      grid.appendChild(row);
+    }
+  }
+
+  function getActiveNames() {
+    const all = [];
+    for (let i = 0; i < MAX; i++) {
+      const v = document.getElementById(`name${i}`).value.trim();
+      if (v) all.push({ name: v, index: i });
+    }
+    return all;
+  }
+
+  function getAvailableNames() {
+    return getActiveNames().filter(n => !pickedOrder.includes(n.name));
+  }
+
+  function drawWheel(highlightIndex = -1) {
+    const canvas = document.getElementById('wheel');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const cx = W/2, cy = H/2, r = W/2 - 8;
+
+    ctx.clearRect(0, 0, W, H);
+    const available = getAvailableNames();
+
+    if (available.length === 0) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI*2);
+      ctx.fillStyle = '#1a1a2a';
+      ctx.fill();
+      ctx.fillStyle = '#555570';
+      ctx.font = 'bold 18px "DM Sans"';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('All picked!', cx, cy);
+      return;
+    }
+
+    const slice = (Math.PI * 2) / available.length;
+    available.forEach((item, i) => {
+      const startA = currentAngle + i * slice;
+      const endA   = startA + slice;
+      const isHL   = i === highlightIndex;
+
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, startA, endA);
+      ctx.closePath();
+      ctx.fillStyle = isHL ? '#fff' : COLORS[item.index % COLORS.length];
+      ctx.fill();
+      ctx.strokeStyle = '#0a0a0f';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(startA + slice/2);
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = isHL ? '#0a0a0f' : 'rgba(0,0,0,0.85)';
+      ctx.font = `bold ${available.length > 8 ? 12 : 14}px "DM Sans"`;
+      let label = item.name;
+      if (label.length > 12) label = label.slice(0, 11) + '…';
+      ctx.fillText(label, r - 12, 0);
+      ctx.restore();
+    });
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, 20, 0, Math.PI*2);
+    ctx.fillStyle = '#0a0a0f';
+    ctx.fill();
+    ctx.strokeStyle = '#f0c040';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+
+  function startSpin() {
+    if (spinning) return;
+    const available = getAvailableNames();
+    if (available.length === 0) return;
+
+    spinning = true;
+    document.getElementById('btnSpin').disabled = true;
+    document.getElementById('resultBox').classList.remove('highlight');
+    document.getElementById('resultName').textContent = '…';
+
+    const winnerIdx  = Math.floor(Math.random() * available.length);
+    const sliceAngle = (Math.PI * 2) / available.length;
+    const targetOffset = -(currentAngle + winnerIdx * sliceAngle + sliceAngle/2) - Math.PI/2;
+    const extraSpins   = (Math.PI * 2) * (5 + Math.floor(Math.random() * 4));
+    const totalRotation = extraSpins + ((targetOffset % (Math.PI*2)) + Math.PI*2) % (Math.PI*2);
+
+    const duration  = 4000 + Math.random() * 1000;
+    const startTime = performance.now();
+    const startAngle = currentAngle;
+
+    function ease(t) { return 1 - Math.pow(1 - t, 3); }
+
+    function animate(now) {
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      currentAngle = startAngle + totalRotation * ease(t);
+      drawWheel();
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        currentAngle = startAngle + totalRotation;
+        const normalized = ((-currentAngle - Math.PI/2) % (Math.PI*2) + Math.PI*2) % (Math.PI*2);
+        const actualIdx  = Math.floor(normalized / sliceAngle) % available.length;
+        drawWheel(actualIdx);
+        onWinner(available[actualIdx].name);
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+
+  function onWinner(name) {
+    pickedOrder.push(name);
+    spinning = false;
+
+    for (let i = 0; i < MAX; i++) {
+      const inp   = document.getElementById(`name${i}`);
+      const badge = document.getElementById(`badge${i}`);
+      if (inp.value.trim() === name && !inp.classList.contains('picked')) {
+        inp.classList.add('picked');
+        badge.className = 'name-badge picked-badge';
+        badge.textContent = pickedOrder.length;
+        break;
+      }
+    }
+
+    document.getElementById('resultName').textContent = name;
+    document.getElementById('resultBox').classList.add('highlight');
+
+    const chip = document.createElement('div');
+    chip.className = 'history-chip';
+    chip.innerHTML = `<span class="order">${pickedOrder.length}</span>${name}`;
+    document.getElementById('history').prepend(chip);
+
+    if (getAvailableNames().length === 0) {
+      document.getElementById('btnSpin').disabled = true;
+      document.getElementById('btnSpin').textContent = 'ALL DONE!';
+      drawWheel();
+    } else {
+      document.getElementById('btnSpin').disabled = false;
+    }
+  }
+
+  function resetAll() {
+    pickedOrder = [];
+    currentAngle = 0;
+    spinning = false;
+    for (let i = 0; i < MAX; i++) {
+      const inp   = document.getElementById(`name${i}`);
+      const badge = document.getElementById(`badge${i}`);
+      inp.classList.remove('picked');
+      badge.className = 'name-badge active';
+      badge.textContent = '';
+    }
+    document.getElementById('resultName').textContent = '—';
+    document.getElementById('resultBox').classList.remove('highlight');
+    document.getElementById('history').innerHTML = '';
+    const btn = document.getElementById('btnSpin');
+    btn.disabled = false;
+    btn.textContent = 'SPIN';
+    drawWheel();
+  }
+
+  buildInputs();
+  drawWheel();
+</script>
+</body>
+</html>
