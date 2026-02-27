@@ -138,6 +138,19 @@
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   .toast.green { border-color: rgba(126,200,124,0.5); color: var(--green); }
   .toast.orange { border-color: rgba(224,90,48,0.5); color: var(--accent2); }
+
+  .confirm-bar {
+    flex-shrink: 0; display: flex; align-items: center; gap: 8px;
+    background: rgba(224,90,48,0.1); border: 1px solid rgba(224,90,48,0.3);
+    border-radius: 8px; padding: 8px 12px; font-size: 0.8rem; color: var(--accent2);
+  }
+  .confirm-bar span { flex: 1; }
+  .confirm-bar button {
+    background: transparent; border: 1px solid currentColor; border-radius: 6px;
+    padding: 3px 10px; font-size: 0.78rem; cursor: pointer; font-family: "DM Sans", sans-serif;
+  }
+  #confirmYes { color: var(--accent2); }
+  #confirmNo  { color: var(--muted); border-color: var(--muted); }
 </style>
 </head>
 <body>
@@ -155,7 +168,7 @@
     </div>
 
     <!-- Teams People Picker -->
-    <button class="btn-people" onclick="openPeoplePicker()">
+    <button class="btn-people" id="btnPeople">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.4"/>
         <path d="M1.5 13c0-2.485 2.015-4.5 4.5-4.5s4.5 2.015 4.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
@@ -168,9 +181,10 @@
 
     <div class="names-grid" id="namesGrid"></div>
 
-    <button class="btn-spin" id="btnSpin" onclick="startSpin()">SPIN</button>
-    <button class="btn-reset" onclick="resetPicks()">↺ Reset Picks</button>
-    <button class="btn-reset btn-reset-names" onclick="resetNames()">✕ Reset Names</button>
+    <button class="btn-spin" id="btnSpin">SPIN</button>
+    <button class="btn-reset" id="btnResetPicks">↺ Reset Picks</button>
+    <button class="btn-reset btn-reset-names" id="btnResetNames">✕ Reset Names</button>
+    <div class="confirm-bar" id="confirmBar" style="display:none"><span>Clear all names?</span><button id="confirmYes">Yes, clear</button><button id="confirmNo">Cancel</button></div>
   </div>
 
   <div class="wheel-area">
@@ -444,7 +458,12 @@
 
   // ── Reset names + picks — clears localStorage too ─────
   function resetNames() {
-    if (!confirm('Clear all names and picks?')) return;
+    // confirm() is blocked in Teams iframes — use inline confirm bar instead
+    document.getElementById('confirmBar').style.display = 'flex';
+  }
+
+  function doResetNames() {
+    document.getElementById('confirmBar').style.display = 'none';
     try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
     pickedOrder = []; currentAngle = 0; spinning = false;
     for (let i = 0; i < MAX; i++) {
@@ -469,6 +488,17 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => { t.classList.remove('show'); }, 3000);
   }
+
+  // ── Wire up all buttons via addEventListener ──────────
+  // Script is at end of <body> so DOM is already fully parsed — no DOMContentLoaded needed
+  document.getElementById('btnSpin').addEventListener('click', startSpin);
+  document.getElementById('btnResetPicks').addEventListener('click', resetPicks);
+  document.getElementById('btnResetNames').addEventListener('click', resetNames);
+  document.getElementById('btnPeople').addEventListener('click', openPeoplePicker);
+  document.getElementById('confirmYes').addEventListener('click', doResetNames);
+  document.getElementById('confirmNo').addEventListener('click', function() {
+    document.getElementById('confirmBar').style.display = 'none';
+  });
 
   // ── Start ──────────────────────────────────────────────
   buildInputs();
